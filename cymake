@@ -1,0 +1,534 @@
+#!/bin/bash
+
+#########################################################
+# Arguments
+#
+function print_tag {
+  #
+  # Version control
+  local FN_NAME=print_tag
+  local FN_UPDATE=2020-08-29
+  local FN_VERSION=2
+  local FN_AUTHOR=leolio
+  #
+  # Function body
+  if [[ -z "${TAG}" ]]; then
+    printf ": "
+  elif [[ "${MSG_TYPE}" = "LOG" ]]; then
+    printf "[${TAG}]: "
+  elif [[ "${MSG_TYPE}" = "INFO" ]]; then
+    printf "${LIGHT_BLUE}[${END}${LIGHT_AMBER}${TAG}${END}${LIGHT_BLUE}]:${END} "
+  elif [[ "${MSG_TYPE}" = "CRITICAL" ]]; then
+    printf "${LIGHT_AMBER}[${END}${FLASHING}${LIGHT_RED}${TAG}${END}${LIGHT_AMBER}]:${END} "
+  elif [[ "${MSG_TYPE}" = "SAFE" ]]; then
+    printf "${LIGHT_GREEN}[${END}${LIGHT_TURQUOISE}${TAG}${END}${LIGHT_GREEN}]:${END} "
+  fi
+}
+
+#########################################################
+# Arguments
+#
+function print_msg {
+  #
+  # Version Control
+  local FN_NAME=print_msg
+  local FN_UPDATE=2020-08-29
+  local FN_VERSION=2
+  local FN_AUTHOR=leolio
+  #
+  # Function body
+  if [[ "${MSG_TYPE}" = "LOG" ]]; then
+    printf "${MSG}\n"
+  elif [[ "${MSG_TYPE}" = "INFO" ]]; then
+    printf "${ITALICS}${LIGHT_BLUE}${MSG}${END}\n"
+  elif [[ "${MSG_TYPE}" = "CRITICAL" ]]; then
+    printf "${ITALICS}${LIGHT_AMBER}${MSG}${END}\n"
+  elif [[ "${MSG_TYPE}" = "SAFE" ]]; then
+    printf "${ITALICS}${LIGHT_TURQUOISE}${MSG}${END}\n"
+  fi
+}
+
+#########################################################
+# Arguments
+#
+function print_time {
+  #
+  # Version Control
+  local FN_NAME=print_time
+  local FN_UPDATE=2020-08-29
+  local FN_VERSION=2
+  local FN_AUTHOR=leolio
+  #
+  # Local Variables
+  local TIME=`date +%Y-%m-%d_%H:%M:%S`
+  #
+  # function body
+  if [ "${MSG_TYPE}" = "LOG" ]; then
+    printf "${TIME} "
+  elif [ "${MSG_TYPE}" = "INFO" ]; then
+    printf "${BOLD}${ITALICS}${DARK_BLUE}${TIME}${END} "
+  elif [ "${MSG_TYPE}" = "CRITICAL" ]; then
+    printf "${BOLD}${ITALICS}${DARK_AMBER}${TIME}${END} "
+  elif [ "${MSG_TYPE}" = "SAFE" ]; then
+    printf "${BOLD}${ITALICS}${DARK_TURQUOISE}${TIME}${END} "
+  fi
+}
+
+#########################################################
+# Arguments
+#
+function print_header {
+  #
+  # Version Control
+  local FN_NAME=print_header
+  local FN_UPDATE=2020-08-29
+  local FN_VERSION=2
+  local FN_AUTHOR=leolio
+  #
+  # Function body
+  if [ "${MSG_TYPE}" = "LOG" ]; then
+    printf "${ME}@${HOSTNAME}::${APP_NAME} ${APP_VERSION} (PID:${PID}) "
+  elif [ "${MSG_TYPE}" = "INFO" ]; then
+    printf "${BOLD}${DARK_BLUE}${ME}@${HOSTNAME}::${APP_NAME} ${APP_VERSION} (PID:${PID})${END} "
+  elif [ "${MSG_TYPE}" = "CRITICAL" ]; then
+    printf "${BOLD}${DARK_AMBER}${ME}@${HOSTNAME}::${APP_NAME} ${APP_VERSION} (PID:${PID})${END} "
+  elif [ "${MSG_TYPE}" = "SAFE" ]; then
+    printf "${BOLD}${DARK_TURQUOISE}${ME}@${HOSTNAME}::${APP_NAME} ${APP_VERSION} (PID:${PID})${END} "
+  fi
+}
+
+#########################################################
+# Arguments
+#   MSG_TYPE, MSG, TAG
+# Required function
+#   print_header, print_time, print_tag, print_msg
+function msg_with_tag {
+  #
+  # Version control
+  local FN_NAME=msg_with_tag
+  local FN_UPDATE=2020-08-29
+  local FN_VERSION=2
+  local FN_AUTHOR=leolio
+  #
+  # Local variables
+  local MSG_TYPE="$1"
+  local MSG="$2"
+  local TAG="$3"
+  local ME=`whoami`
+  local PID=$$
+  local LIGHT_BLUE='\033[94m'
+  local LIGHT_AMBER='\033[93m'
+  local LIGHT_RED='\033[91m'
+  local LIGHT_GREEN='\033[92m'
+  local LIGHT_TURQUOISE='\033[96m'
+  local DARK_BLUE='\033[34m'
+  local DARK_AMBER='\033[33m'
+  local DARK_TURQUOISE='\033[36m'
+  local FLASHING='\033[5m'
+  local BOLD='\033[1m'
+  local ITALICS='\033[3m'
+  local END='\033[0m'
+  #
+  # Function body
+  print_header
+  print_time
+  print_tag
+  print_msg
+}
+
+function msg_python2 {
+  msg_with_tag INFO "\n    Using Python 2. You may use +3 option for Python 3." "VERSION"
+}
+
+function msg_python {
+  msg_with_tag INFO "\n    Using Python ${PY_VERSION}" "VERSION"
+}
+
+function msg_cleaned {
+  msg_with_tag INFO "" "CLEANED"
+}
+
+function msg_target_installed {
+  msg_with_tag INFO "\n    location: /usr/local/bin/${TARGET_NAME}" "INSTALLED"
+}
+
+function msg_target_built {
+  msg_with_tag INFO "\n    File generated to: ${BUILD_FOLDER}/bin/${TARGET_NAME}" "BUILT"
+}
+
+function msg_tested {
+  msg_with_tag INFO "" "TESTED"
+}
+
+function msg_test_folder_not_found {
+  msg_with_tag INFO "\n    Test Folder: ${TEST_FOLDER}" "NOT FOUND"
+}
+
+function msg_target_started {
+  msg_with_tag INFO "\n    Execute file: ${BUILD_FOLDER}/bin/${TARGET_NAME}" "RUNNING"
+}
+
+function msg_app_installed_already {
+  msg_with_tag INFO "\n    ${APP_NAME} is installed already: ${THIS}" "INSTALLED ALREADY"
+}
+
+function msg_app_installed {
+  msg_with_tag INFO "\n    ${APP_NAME} has been installed to: /usr/local/bin/${BASE_NAME}" "INSTALLED"
+}
+
+function msg_app_cloned {
+  msg_with_tag INFO "\n        This app has been cloned: ./${BASE_NAME}" "CLONED"
+}
+
+function msg_app_need_installed {
+  msg_with_tag CRITICAL "\n        ${THIS_PATH}. You should install ${APP_NAME} to: /usr/local/bin first" "NOT INSTALLED"
+}
+
+function msg_param_needed {
+  msg_with_tag CRITICAL "\n    Please specify options such as: \n        install-${APP_NAME}, clone-${APP_NAME}-here, info\n        clean, build, run, install, build-lib, test-lib " "NO PARAM"
+}
+
+function msg_project_ini_not_found {
+  msg_with_tag CRITICAL "\n        ./project.ini" "NOT FOUND"
+}
+
+function msg_project_ini_not_correct {
+  msg_with_tag CRITICAL "\n        ./project.ini" "NOT CORRECT"
+}
+
+function msg_py3_required {
+  msg_with_tag CRITICAL "\n        python 3" "PYTHON REQUIRED"
+}
+
+function msg_py2_required {
+  msg_with_tag CRITICAL "\n        python 2" "PYTHON REQUIRED"
+}
+
+function msg_cython_required {
+  msg_with_tag CRITICAL "\n        cython" "CYTHON REQUIRED"
+}
+
+function msg_gcc_required {
+  msg_with_tag CRITICAL "\n        gcc" "GCC REQUIRED"
+}
+
+function msg_info {
+  local PY2_VERSION=`which_python2`
+  local PY3_VERSION=`which_python3`
+  local CYTHON_VERSION=`which_cython`
+  local GCC_VERSION=`which_gcc`
+  if [[ -z "${PY2_VERSION}" ]]; then
+    msg_with_tag CRITICAL "\n    Python 2" "NOT FOUND"
+  else
+    msg_with_tag SAFE "\n    Python 2 version: ${PY2_VERSION}" "PYTHON2"
+  fi
+  if [[ -z "${PY3_VERSION}" ]]; then
+    msg_with_tag CRITICAL "\n    Python 3" "NOT FOUND"
+  else
+    msg_with_tag SAFE "\n    Python 3 version: ${PY3_VERSION}" "PYTHON3"
+  fi
+  if [[ -z "${CYTHON_VERSION}" ]]; then
+    msg_with_tag CRITICAL "\n    cython" "NOT FOUND"
+  else
+    msg_with_tag SAFE "\n    Cython version: ${CYTHON_VERSION}" "CYTHON"
+  fi
+  if [[ -z "${GCC_VERSION}" ]]; then
+    msg_with_tag CRITICAL "\n    gcc" "NOT FOUND"
+  else
+    msg_with_tag SAFE "\n    Gcc version: ${GCC_VERSION}" "GCC"
+  fi
+}
+
+function get_version {
+  local VERSION_STR=`$1 --version 2>&1|head -n 1`
+  local VERSION=`echo "${VERSION_STR}"|sed -E 's/\([^\)]*\)//g'|sed -E 's/[^0-9\.]*([0-9\.]*(rc[0-9])?)/\1/g'`
+  echo ${VERSION}
+}
+
+function which_python {
+  local WHICH_PY=`which python 2>/dev/null`
+  if [[ ! -z ${WHICH_PY} ]]; then
+    local PY_VERSION=`get_version ${WHICH_PY}`
+  fi
+  echo ${PY_VERSION}
+}
+
+function which_python3 {
+  local WHICH_PY3=`which python3 2>/dev/null`
+  if [[ ! -z ${WHICH_PY3} ]]; then
+    local PY_VERSION=`get_version ${WHICH_PY3}`
+  fi
+  if [[ -z "${PY_VERSION}" ]]; then
+    local PY_VERSION=`which_python|sed -E 's/^[^3]\..*//g'`
+  fi
+  echo ${PY_VERSION}
+}
+
+function which_python2 {
+  local WHICH_PY2=`which python2 2>/dev/null`
+  if [[ ! -z ${WHICH_PY2} ]]; then
+    local PY_VERSION=`get_version ${WHICH_PY2}`
+  fi
+  if [[ -z "${PY_VERSION}" ]]; then
+    local PY_VERSION=`which_python|sed -E 's/^[^2]\..*//g'`
+  fi
+  echo ${PY_VERSION}
+}
+
+function which_cython {
+  local WHICH_CYTHON=`which cython 2>/dev/null`
+  if [[ ! -z ${WHICH_CYTHON} ]]; then
+    local CYTHON_VERSION=`get_version ${WHICH_CYTHON}`
+  fi
+  echo "${CYTHON_VERSION}"
+}
+
+function which_gcc {
+  local WHICH_GCC=`which gcc 2>/dev/null`
+  if [[ ! -z ${WHICH_GCC} ]]; then
+    local GCC_VERSION=`get_version ${WHICH_GCC}`
+  fi
+  echo ${GCC_VERSION}
+}
+
+function main_version {
+  local MAIN_VERSION=`echo $1|sed -E 's/([0-9]*\.[0-9]*).*/\1/g'`
+  echo ${MAIN_VERSION}
+}
+
+function cython_clean {
+  if [[ ! -z "${TARGET_NAME}" ]]; then
+  	rm -rf ${BUILD_FOLDER}/*
+	fi
+  if [[ ! -z ${SRC_FOLDER} ]]; then
+    if [[ -f ${SRC_FOLDER}/setup.py ]]; then
+      rm ${SRC_FOLDER}/setup.py
+    fi
+  fi
+  if [[ -d ${TEST_FOLDER} ]]; then
+    rm -rf ${TEST_FOLDER}/lib
+  fi
+  msg_cleaned
+}
+
+function cython_install {
+  sudo cp -P ${BUILD_FOLDER}/bin/${TARGET_NAME} /usr/local/bin
+  msg_target_installed
+}
+
+function cython3_build {
+  local PY3_VERSION=`which_python3`
+  local PY3_MAIN_VERSION=`main_version ${PY3_VERSION}`
+  local CYTHON_VERSION=`which_cython`
+  local GCC_VERSION=`which_gcc`
+  if [[ ! -z ${PY3_MAIN_VERSION} ]]; then
+    if [[ ! -z ${CYTHON_VERSION} ]]; then
+      if [[ ! -z ${GCC_VERSION} ]]; then
+        mkdir -p ${BUILD_FOLDER}/{c,bin}
+        cython -3 -o ${BUILD_FOLDER}/c/${TARGET_NAME}.c ${SRC_FOLDER}/${TARGET_NAME}.pyx --embed
+        gcc ${BUILD_FOLDER}/c/${TARGET_NAME}.c -lpython${PY3_MAIN_VERSION} `(python3-config --includes)` `(python3-config --libs)` -O2 -Wl,-O1,-rpath=/usr/local/lib -o ${BUILD_FOLDER}/bin/${TARGET_NAME}
+        msg_target_built
+      else
+        msg_gcc_required
+      fi
+    else
+      msg_cython_required
+    fi
+  else
+    msg_py3_required
+  fi
+}
+
+function cython_build {
+  local PY2_VERSION=`which_python2`
+  local PY2_MAIN_VERSION=`main_version ${PY2_VERSION}`
+  local CYTHON_VERSION=`which_cython`
+  local GCC_VERSION=`which_gcc`
+  if [[ ! -z ${PY2_MAIN_VERSION} ]]; then
+    if [[ ! -z ${CYTHON_VERSION} ]]; then
+      if [[ ! -z ${GCC_VERSION} ]]; then
+        mkdir -p ${BUILD_FOLDER}/{c,bin}
+        cython -2 -o ${BUILD_FOLDER}/c/${TARGET_NAME}.c ${SRC_FOLDER}/${TARGET_NAME}.pyx --embed
+        gcc ${BUILD_FOLDER}/c/${TARGET_NAME}.c `(python-config --includes)` `(python-config --libs)` -O2 -Wl,-O1,-rpath=/usr/local/lib -o ${BUILD_FOLDER}/bin/${TARGET_NAME}
+        msg_target_built
+      else
+        msg_gcc_required
+      fi
+    else
+      msg_cython_required
+    fi
+  else
+    msg_py2_required
+  fi
+}
+
+function cython3_build_lib {
+  mkdir -p ${BUILD_FOLDER}/lib
+  python3 ${SRC_FOLDER}/setup.py build_ext --inplace
+  if [[ ! -f ${BUILD_FOLDER}/lib/__init__.py ]]; then
+    touch ${BUILD_FOLDER}/lib/__init__.py
+  fi
+  find . -type f -name *.so -exec mv {} ${BUILD_FOLDER}/lib \;
+  if [[ -d ${TEST_FOLDER} ]]; then
+    mkdir -p ${TEST_FOLDER}/lib
+    touch ${TEST_FOLDER}/lib/__init__.py
+    find ${BUILD_FOLDER}/lib -type f -name *.so -exec cp {} ./test/lib \;
+  fi
+  for filename in ${BUILD_FOLDER}/lib/*.so; do
+    [ -e "$filename" ] || continue
+    msg_with_tag INFO "\n    Library file generated to: ${filename}" "LIB BUILT"
+  done
+}
+
+function cython_build_lib {
+  mkdir -p ${BUILD_FOLDER}/lib
+  python ${SRC_FOLDER}/setup.py build_ext --inplace
+  if [[ ! -f ${BUILD_FOLDER}/lib/__init__.py ]]; then
+    touch ${BUILD_FOLDER}/lib/__init__.py
+  fi
+  find . -type f -name *.so -exec mv {} ${BUILD_FOLDER}/lib \;
+  if [[ -d ${TEST_FOLDER} ]]; then
+    mkdir -p ${TEST_FOLDER}/lib
+    touch ${TEST_FOLDER}/lib/__init__.py
+    find ${BUILD_FOLDER}/lib -type f -name *.so -exec cp {} ./test/lib \;
+  fi
+  for filename in ${BUILD_FOLDER}/lib/*.so; do
+    [ -e "$filename" ] || continue
+    msg_with_tag INFO "\n    Library file generated to: ${filename}" "LIB BUILT"
+  done
+}
+
+function cython3_test_lib {
+  if [[ -d ${TEST_FOLDER} ]]; then
+    find ${TEST_FOLDER} -type f -name *.py -exec python3 {} \;
+    msg_tested
+  else
+    msg_test_folder_not_found
+  fi
+}
+
+function cython_test_lib {
+  if [[ -d ${TEST_FOLDER} ]]; then
+    find ${TEST_FOLDER} -type f -name *.py -exec python {} \;
+    msg_tested
+  else
+    msg_test_folder_not_found
+  fi
+}
+
+function cython_setup {
+  cat > ${SRC_FOLDER}/setup.py <<EOT
+from setuptools import setup
+from Cython.Build import cythonize
+setup(
+  ext_modules=cythonize("src/${TARGET_NAME}.pyx")
+)
+EOT
+}
+
+function cython_run {
+  msg_target_started
+  ./${BUILD_FOLDER}/bin/${TARGET_NAME}
+}
+
+function cymake_main {
+  if [[ -f ./project.ini ]]; then
+    source ./project.ini
+  fi
+  local PY_VERSION=2
+  if [[ " $* " == *\ -3\ * ]]; then
+    PY_VERSION=3
+  elif [[ " $* " == *\ -2\ * ]]; then
+    PY_VERSION=2
+  fi
+  local THIS=$0
+  local THIS_PATH=`dirname ${THIS}`
+  local BASE_NAME=`basename ${THIS}`
+  if [[ " $* " == *\ install-${APP_NAME}\ * ]]; then
+    if [[ ${THIS_PATH} == /usr/local/bin ]]; then
+      msg_app_installed_already
+    else
+      sudo cp -rP ${THIS} /usr/local/bin
+      msg_app_installed
+    fi
+  elif [[ " $* " == *\ clone-${APP_NAME}-here\ * ]]; then
+    if [[ ${THIS_PATH} == /usr/local/bin ]]; then
+      cp -rP ${THIS} ./
+      msg_app_cloned
+    else
+      msg_app_need_installed
+    fi
+  elif [[ " $* " == *\ install\ * ]]; then
+    cython_clean
+    if [[ ${PY_VERSION} = 3 ]]; then
+      msg_python
+      cython3_build
+    else
+      msg_python2
+      cython_build
+    fi
+    cython_install
+  elif [[ " $* " == *\ info\ * ]]; then
+    msg_info
+  elif [[ ! -z ${TARGET_NAME} ]]; then
+    if [[ " $* " == *\ test-lib\ * ]]; then
+      cython_clean
+      cython_setup
+      if [[ ${PY_VERSION} = 3 ]]; then
+        msg_python
+        cython3_build_lib
+        cython3_test_lib
+      else
+        msg_python2
+        cython_build_lib
+        cython_test_lib
+      fi
+    elif [[ " $* " == *\ build-lib\ * ]]; then
+      cython_clean
+      cython_setup
+      if [[ ${PY_VERSION} = 3 ]]; then
+        msg_python
+        cython3_build_lib
+      else
+        msg_python2
+        cython_build_lib
+      fi
+    elif [[ " $* " == *\ run\ * ]]; then
+      cython_clean
+      if [[ ${PY_VERSION} = 3 ]]; then
+        msg_python
+        cython3_build
+      else
+        msg_python2
+        cython_build
+      fi
+      cython_run
+    elif [[ " $* " == *\ build\ * ]]; then
+        cython_clean
+        if [[ ${PY_VERSION} = 3 ]]; then
+          msg_python
+          cython3_build
+        else
+          msg_python2
+          cython_build
+        fi
+    elif [[ " $* " == *\ clean\ * ]]; then
+      cython_clean
+    else
+      msg_param_needed
+    fi
+  else
+    if [[ -f ./project.ini ]]; then
+      msg_param_needed
+    else
+      msg_project_ini_not_correct
+    fi
+  fi
+}
+
+APP_NAME=cymake \
+APP_VERSION=1.0 \
+BUILD_FOLDER=build \
+SRC_FOLDER=src \
+TEST_FOLDER=test \
+cymake_main "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "$10"
