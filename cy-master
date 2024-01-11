@@ -17,51 +17,7 @@
 ##! exit /b 0
 ##! """
 """:"
-if [ -f /usr/bin/sw_vers ]; then
-WHICH='which'
-elif [ -f /usr/bin/which ]; then
-WHICH='/usr/bin/which'
-elif [ -f /bin/which ]; then
-WHICH='/bin/which'
-elif [ -f "C:\\Windows\\System32\\where.exe" ]; then
-WHICH="C:\\Windows\\System32\\where.exe"
-fi
-if [ ! -z $WHICH ]; then
-    _PY_=$($WHICH python3)
-    if [ -z $_PY_ ]; then _PY_=$($WHICH python2); if [ -z $_PY_ ]; then _PY_=$($WHICH pypy3); if [ -z $_PY_ ]; then _PY_=$($WHICH pypy); if [ -z $_PY_ ]; then _PY_=$($WHICH python); if [ -z $_PY_ ]; then echo 'No Python Found'; fi; fi; fi; fi; fi; 
-    if [ ! -z "$_PY_" ]; then
-        WINPTY=$($WHICH winpty.exe 2>/dev/null)
-        if [ ! -z "$WINPTY" ]; then
-            PY_EXE=$($WHICH python.exe 2>/dev/null)
-            if [ ! -z "$PY_EXE" ]; then
-                exec "$WINPTY" "$PY_EXE" "$0" "$@"
-                exit 0
-            fi
-        else
-            exec $_PY_ "$0" "$@"
-            exit 0
-        fi
-    fi
-fi
-if [  -f /usr/bin/python3 ]; then
-    exec /usr/bin/python3 "$0" "$@"
-    exit 0
-fi
-if [  -f /usr/bin/python2 ]; then
-    exec /usr/bin/python2 "$0" "$@"
-    exit 0
-if [  -f /usr/bin/python ]; then
-    exec /usr/bin/python "$0" "$@"
-    exit 0
-fi
-if [  -f /usr/bin/pypy3 ]; then
-    exec /usr/bin/pypy3 "$0" "$@"
-    exit 0
-fi 
-if [  -f /usr/bin/pypy ]; then
-    exec /usr/bin/pypy "$0" "$@"
-    exit 0
-fi
+if [ -f /usr/bin/sw_vers ]; then WHICH='which';elif [ -f /usr/bin/which ]; then WHICH='/usr/bin/which';elif [ -f /bin/which ]; then WHICH='/bin/which';elif [ -f "C:\\Windows\\System32\\where.exe" ]; then WHICH="C:\\Windows\\System32\\where.exe";fi; if [ ! -z $WHICH ]; then _PY_=$($WHICH python3);if [ -z $_PY_ ]; then _PY_=$($WHICH python2); if [ -z $_PY_ ]; then _PY_=$($WHICH pypy3); if [ -z $_PY_ ]; then _PY_=$($WHICH pypy); if [ -z $_PY_ ]; then _PY_=$($WHICH python); if [ -z $_PY_ ]; then echo 'No Python Found'; fi; fi; fi; fi; fi; if [ ! -z "$_PY_" ]; then WINPTY=$($WHICH winpty.exe 2>/dev/null);if [ ! -z "$WINPTY" ]; then PY_EXE=$($WHICH python.exe 2>/dev/null);if [ ! -z "$PY_EXE" ]; then exec "$WINPTY" "$PY_EXE" "$0" "$@";exit 0;fi;else exec $_PY_ "$0" "$@";exit 0;fi;fi;fi;if [  -f /usr/bin/python3 ]; then exec /usr/bin/python3 "$0" "$@";exit 0;fi;if [  -f /usr/bin/python2 ]; then exec /usr/bin/python2 "$0" "$@";exit 0;fi;if [  -f /usr/bin/python ]; then exec /usr/bin/python "$0" "$@";exit 0;fi;if [  -f /usr/bin/pypy3 ]; then exec /usr/bin/pypy3 "$0" "$@";exit 0;fi ;if [  -f /usr/bin/pypy ]; then exec /usr/bin/pypy "$0" "$@";exit 0;fi
 # This is code from online-installer, homepage: https://github.com/cloudgen2/online-installer
 exit 0
 ":"""
@@ -78,17 +34,20 @@ try:
     __file__
 except NameError: 
     __file__ = ''
-
 try:
     import ConfigParser as configparser
 except:
     import configparser
-
 try:
     import pwd
 except:
     pwd = None
-    
+try:
+    get_ipython
+    getIpythonExists = True
+except:
+    getIpythonExists = True
+    get_ipython={}
 from datetime import date, datetime
 import getpass
 from inspect import currentframe
@@ -104,7 +63,7 @@ import time
 import sys
 
 class AppBase(object):
-
+    VERSION="1.1"
     BOLD='\033[1m'
     DARK_AMBER='\033[33m'
     DARK_BLUE='\033[34m'
@@ -241,7 +200,7 @@ class AppBase(object):
     def __install_local__(self, this = None, verbal = True ):
         result = False
         if this is None:
-            this = self.thisFile()
+            this = self.this()
         if self.isCmd() or self.isGitBash():
             file = 'C:\\Users\\%s\\AppData\\Local\\Microsoft\\WindowsApps\\%s.bat' % (self.username(),self.appName())
             result = self.translateScript(source=this, target=file, useSudo=False)
@@ -268,7 +227,7 @@ class AppBase(object):
 
     def __self_install__(self, this=None, verbal = True, sudo=False):
         if this is None:
-            this = self.thisFile()
+            this = self.this()
         result = False
         try_global = True
         if self.username() != 'root':
@@ -305,16 +264,25 @@ class AppBase(object):
 
     def __self_install_globally__(self, verbal = True):
         if self.username() == 'root':
-            self.__self_install__(this=self.thisFile(), verbal=verbal)
+            if self.thisFile().endswith(".so"):
+                self.__self_install__(this=self.this(), verbal=verbal)
+            else:
+                self.__self_install__(this=self.thisFile(), verbal=verbal)
         elif self.ask_not_root():
             if self.sudo_test():
                 self.msg_sudo()
-                return self.__self_install__(this=self.thisFile(), verbal=verbal, sudo=True)
+                if self.thisFile().endswith(".so"):
+                    return self.__self_install__(this=self.this(), verbal=verbal, sudo=True)
+                else:
+                    return self.__self_install__(this=self.thisFile(), verbal=verbal, sudo=True)
         elif self.username() != 'root':
             self.msg_root_continue()
             return False
         else:
-            return self.__self_install__(this=self.thisFile(), verbal=verbal)
+            if self.thisFile().endswith(".so"):
+                return self.__self_install__(this=self.thisFile(), verbal=verbal)
+            else:
+                return self.__self_install__(this=self.this(), verbal=verbal)
 
     def __tag__(self, tag=None):
         if tag is not None:
@@ -588,31 +556,36 @@ class AppBase(object):
     def check_python(self):
         self.cmd_history("# ** Checking python version  **")
         python2 = self.which_cmd("python2")
-        if python2 == '':
+        python3 = self.which_cmd("python3")
+        arch = 'x86_64'
+        if self.arch() == 'amd64':
+            arch = 'x86_64'
+        if python2 == '' or python3 == '':
             python = self.which_cmd("python")
             if python != "":
                 result , stdout = self.shell(f"{python} --version")
                 if result:
                     id_array = stdout.strip().split(' ')
-                    if len(id_array) > 2:
+                    if len(id_array) > 1:
                         version_array = id_array[1].split(".")
                         version = version_array[0]
                         if int(version) == 2:
                             python2 = python
-        python3 = self.which_cmd("python3")
+                        elif int(version) == 3 and python3=='':
+                            python3 = python
+                        self.__cython_version__=f"cpython-{version_array[0]}{version_array[1]}-{arch}-linux-gnu"
         self.__python2__ = python2
         self.__python3__ = python3
+        if not hasattr(self,"__cython_version__"):
+            self.__cython_version__=""
+            if self.__python3__ != "":
+                result , stdout = self.shell(f"{self.__python3__} --version")
+                if result:
+                    id_array = stdout.strip().split(' ')
+                    if len(id_array) > 1:
+                        version_array = id_array[1].split(".")
+                        self.__cython_version__=f"cpython-{version_array[0]}{version_array[1]}-{arch}-linux-gnu"
         self.__python_checked__ = True
-
-
-    def check_system_and_user(self):
-        # is_linux() Check if not windows and not macOS
-        if self.allowLinuxOnly() and not self.is_linux():
-            self.msg_linux_only()
-            return False
-        else:
-            # root_or_sudo() Check user is root or has sudo privilege
-            return self.root_or_sudo()
 
     def cmd_history(self,cmd=None, line=None):
         if not hasattr(self, '__reg_end_stars__'):
@@ -674,8 +647,8 @@ class AppBase(object):
             return self
         elif not hasattr(self,'__app_path__'):
             self.__app_path__=''
-            if not self.fromPipe() and self.thisFile() != '':
-                appPath = os.path.abspath(self.thisFile())
+            if not self.fromPipe() and self.this() != '':
+                appPath = os.path.abspath(self.this())
                 if not appPath.startswith(self.globalFolder(0)) and not appPath.startswith(self.globalFolder(0)) and not appPath.startswith(self.localInstallFolder()):
                     if self.comparePath(appPath, '%s/%s' % (os.getcwd(),appPath.split("/")[-1])):
                         self.__app_path__="./%s" % appPath.split("/")[-1]
@@ -814,6 +787,15 @@ class AppBase(object):
             else:
                 self.binaryVersion('%s-%s' % (self.arch(), self.libcName()))
 
+    def check_system_and_user(self):
+        # is_linux() Check if not windows and not macOS
+        if self.allowLinuxOnly() and not self.is_linux():
+            self.msg_linux_only()
+            return False
+        else:
+            # root_or_sudo() Check user is root or has sudo privilege
+            return self.root_or_sudo()
+
     def check_update(self):
         if self.need_update():
             self.msg_latest_available()
@@ -924,9 +906,9 @@ class AppBase(object):
             if home is None:                    
                 if self.is_alpine():
                     if self.is_sudo():
-                        cmd = "sudo adduser -D -G %s %s" % (group_id, username, username)
+                        cmd = "sudo adduser -D -G %s %s" % (group_id, username)
                     else:
-                        cmd = "adduser -D -G %s %s" % (group_id, username, username)
+                        cmd = "adduser -D -G %s %s" % (group_id, username)
                 elif self.is_debian() or self.osVersion().startswith('CentOS') or self.osVersion().startswith('Amazon Linux'):
                     if self.is_sudo():
                         cmd = "sudo useradd -g %d -u %d -m -s /bin/bash %s" % (group_id, user_id, username)
@@ -1027,7 +1009,7 @@ class AppBase(object):
                 stdout,stderr = Popen([curl,switches,url],stdin=PIPE,stdout=PIPE,\
                     stderr=PIPE,universal_newlines=True).communicate('\n')
         if stderr != "" and not ignoreErr:
-            self.msg_error(command, stderr)
+            self.msg_error(cmd, stderr)
             return False, stderr
         return True, stdout
 
@@ -1317,7 +1299,10 @@ class AppBase(object):
         return result
 
     def install_local(self, verbal = True):
-        return self.__install_local__(self.thisFile(), verbal)
+        if self.thisFile().endswith(".so"):
+            return self.__install_local__(self.this(), verbal)
+        else:
+            return self.__install_local__(self.thisFile(), verbal)
 
     def install_package(self, package=None, path=None):
         # root_or_sudo() Check user is root or has sudo privilege and assuming linux
@@ -1535,7 +1520,7 @@ class AppBase(object):
         self.history_check_group_exists(currentframe().f_lineno)
         self.cmd_history(cmd)
         result, stdout = self.shell(cmd)
-        if group_id is None and Not (user_id is None):
+        if group_id is None and not (user_id is None):
             group_id = user_id
         if stdout=="":
             cmd = ""
@@ -1625,14 +1610,17 @@ class AppBase(object):
 
     def isGlobal(self):
         if not hasattr(self,'__is_global__'):
-            this=self.thisFile() 
+            if self.thisFile().endswith(".so"):
+                this=self.this() 
+            else:
+                this=self.thisFile() 
             if this=='' or this=='<stdin>':
                 if self.pathexists(self.globalInstallPath(0)) or self.pathexists(self.globalInstallPath(1)):
                     return True 
                 else:
                     return False
             else:
-                self.__is_global__ = self.thisFile() == self.globalInstallPath(0) or self.thisFile() == self.globalInstallPath(1)
+                self.__is_global__ = this== self.globalInstallPath(0) or this == self.globalInstallPath(1)
         return self.__is_global__
 
     def isLinuxShell(self):
@@ -1642,7 +1630,10 @@ class AppBase(object):
 
     def is_local(self):
         if not hasattr(self, '__is_local__'):
-            self.__is_local__=self.thisFile() == self.localInstallPath()
+            if self.thisFile().endswith(".so"):
+                self.__is_local__=self.this() == self.localInstallPath()
+            else:
+                self.__is_local__=self.thisFile() == self.localInstallPath()
         return self.__is_local__
 
     def is_opensuse(self):
@@ -1917,6 +1908,9 @@ class AppBase(object):
                 elif self.cmd() == "self-install" or self.cmd() == "install" or self.cmd() == "update":
                     self.start_install()
                     return True
+                elif self.cmd() == "cython-string":
+                    self.prn(self.cythonVersion()) 
+                    return True
                 elif self.cmd() == "check-system":
                     self.msg_system_check()
                     return True
@@ -1969,9 +1963,6 @@ class AppBase(object):
                 if not result:
                     self.msg_installation_failed()
                 return True
-            else:
-                self.selfInstall()
-                return True
         return False
 
     def pathexists(self, path, use_history=False):
@@ -2015,6 +2006,11 @@ class AppBase(object):
             self.__python_name__ = 0
         return self.__python_name__
 
+    def cythonVersion(self):
+        if not hasattr(self, "__cython_version__"):
+            self.check_python()
+        return self.__cython_version__
+
     def pythonVersion(self, version=None):
         if version is not None:
             self.__python_version__ = version.strip()
@@ -2038,7 +2034,7 @@ class AppBase(object):
                 if self.sudo_cmd!="":
                     cmd = 'sudo %s add %s default' % (rc_cmd, package)
                 else:
-                    cmd = '%s add $s default' % (rc_cmd, package)
+                    cmd = '%s add %s default' % (rc_cmd, package)
 
     def real_path(self, x, curr_path=None):
         if curr_path is None:
@@ -2221,7 +2217,10 @@ class AppBase(object):
         elif self.installedGlobal():
             self.msg_global_already()
             if self.ask_overwrite_global():
-                return self.__self_install__(this=self.thisFile(), verbal=verbal)
+                if self.thisFile().endswith(".so"):
+                    return self.__self_install__(this=self.this(), verbal=verbal)
+                else:
+                    return self.__self_install__(this=self.thisFile(), verbal=verbal)
         elif self.installedLocal():
             self.msg_local_already()
             if self.ask_overwrite_local():  
@@ -2233,18 +2232,20 @@ class AppBase(object):
             return self.__self_install_globally__(verbal)
 
     def selfLocation(self):
-        if self.thisFile() != '':
-            return self.thisFile()
-        try:
-            shell = get_ipython().__class__.__name__
-            if shell == 'ZMQInteractiveShell':
-                return "Jupyter"
-            elif shell == 'TerminalInteractiveShell':
-                return "IPython"
-            else:
-                return "Unknown location"
-        except NameError:
-            return "Unknown location" 
+        if self.this() != '':
+            return self.this()
+        if getIpythonExists:
+            try:
+                shell = get_ipython().__class__.__name__
+                if shell == 'ZMQInteractiveShell':
+                    return "Jupyter"
+                elif shell == 'TerminalInteractiveShell':
+                    return "IPython"
+                else:
+                    return "Unknown location"
+            except NameError:
+                return "Unknown location" 
+        return "Unknown location" 
         
     def selfUninstallGlobal(self, verbal = True):
         if self.installedGlobal():
@@ -3006,6 +3007,7 @@ class AppBase(object):
             self.__sub_command__["install"] = True
             self.__sub_command__["update"] = True
             self.__sub_command__["check-system"] = True
+            self.__sub_command__["cython-string"]=True
             self.__sub_command__["this"] = True
             self.__sub_command__["this-file"] = True
             self.__sub_command__["download"] = True
@@ -3053,7 +3055,7 @@ class AppBase(object):
 
     def zshenv(self):
         return os.path.join(self.home(), ".zshenv")
-
+        
     def ask_choose(self):
         # fromPipe() usually involve from curl and don't have stdin
         if self.fromPipe():
@@ -3065,6 +3067,12 @@ class AppBase(object):
         if self.fromPipe():
             return None
         return self.__ask_number__('Choose the profile number? ')
+
+    def ask_create_ini(self):
+        # fromPipe() usually involve from curl and don't have stdin
+        if self.fromPipe():
+            return None
+        return 'yes' == self.__ask_yesno__('Do you wanted to create ini file (type "exit" to exit)? ') 
 
     def ask_install_sudo(self):
         # fromPipe() usually involve from curl and don't have stdin
@@ -3469,6 +3477,8 @@ class AppBase(object):
             self.prn("    Shell: %s" % self.shellCmd())
             self.prn("    Python Executable: %s" % self.executable())
             self.prn("    Inside docker container: %s" % self.is_docker_container())
+            self.prn("    AppBase Version: %s" % AppBase.VERSION)
+            self.prn("    Cython String: %s" % self.cythonVersion())
             self.prn("    Binary Type: %s" % self.binaryVersion() )
             self.prn("")
             self.__system_msg_shown__ = True
@@ -3510,6 +3520,10 @@ class AppBase(object):
 
     def msg_wrong_shell(self, cmd="", title=""):
         self.infoMsg("You are using wrong shell to execute: '%s'" % cmd)
+
+    def __init__(self, this = None):
+        if this is not None:
+            self.this(this)
 
 class CyMaster(AppBase):
 
@@ -3575,12 +3589,6 @@ class CyMaster(AppBase):
         self.targetName(targetName)
 
         return True
-
-    def ask_create_ini(self):
-        # fromPipe() usually involve from curl and don't have stdin
-        if self.fromPipe():
-            return None
-        return 'yes' == self.__ask_yesno__('Do you wanted to create ini file (type "exit" to exit)? ') 
 
     def ask_choose_python_version(self):
         # fromPipe() usually involve from curl and don't have stdin
@@ -3891,6 +3899,6 @@ class CyMaster(AppBase):
                 self.msg_info()
 
 if __name__ == "__main__":
-    app = CyMaster()
-    app.setInstallation(appName='cy-master',author='Cloudgen Wong',homepage="https://github.com/cloudgen/cy-master",downloadUrl="https://dl.leolio.page/cy-master",lastUpdate='2024-1-9',majorVersion=1,minorVersion=9)
+    app = CyMaster(__file__)
+    app.setInstallation(appName='cy-master',author='Cloudgen Wong',homepage="https://github.com/cloudgen/cy-master",downloadUrl="https://dl.leolio.page/cy-master",lastUpdate='2024-1-11',majorVersion=1,minorVersion=11)
     app.start()
